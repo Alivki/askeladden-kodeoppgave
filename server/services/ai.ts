@@ -1,3 +1,6 @@
+import { generateText } from "ai"
+import { createAI } from "@ai-sdk/vercel";
+
 /**
  * AI Service for generating task suggestions
  * 
@@ -25,30 +28,26 @@ export interface CarInfo {
  * @param carInfo - Information about the car
  * @returns Array of task suggestions
  */
-export async function generateTaskSuggestions(
-  carInfo: CarInfo
-): Promise<TaskSuggestion[]> {
-  // TODO: Replace with actual AI API call
-  // Example with OpenAI:
-  // const response = await openai.chat.completions.create({
-  //   model: "gpt-4",
-  //   messages: [
-  //     {
-  //       role: "system",
-  //       content: "You are a helpful assistant that suggests maintenance tasks for cars."
-  //     },
-  //     {
-  //       role: "user",
-  //       content: `Suggest maintenance tasks for a ${carInfo.year} ${carInfo.make} ${carInfo.model} (${carInfo.regNr})`
-  //     }
-  //   ]
-  // });
+export async function generateTaskSuggestions(carInfo: CarInfo): Promise<TaskSuggestion[]> {
+  const result = await generateText({
+      model: ai("openai:gpt-4o-mini"),
+     messages: [
+       {
+         role: "system",
+         content: "You are a helpful assistant that suggests maintenance tasks for cars."
+       },
+       {
+         role: "user",
+         content: `Suggest maintenance tasks for a ${carInfo.year} ${carInfo.make} ${carInfo.model} (${carInfo.regNr})`
+       }
+     ]
+   });
   
   // Mock implementation - replace with actual AI call
   const mockSuggestions: TaskSuggestion[] = [
     {
       title: "Service",
-      description: `Årlig service for ${carInfo.make} ${carInfo.model}`,
+      description: result.text,
     },
     {
       title: "Oljeskift",
@@ -59,9 +58,6 @@ export async function generateTaskSuggestions(
       description: "Vask og polering av bilen",
     },
   ];
-
-  // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 500));
 
   return mockSuggestions;
 }

@@ -125,13 +125,27 @@ export const appRouter = router({
         .where(eq(tasks.carId, input.carId));
     }),
 
+
+    deleteSuggestionTask: publicProcedure
+        .input(z.object({taskId: z.number().int().positive()}))
+        .mutation(async ({ input }) => {
+            const deleted = await db
+                .delete(taskSuggestions)
+                .where(eq(taskSuggestions.id, input.taskId))
+                .returning();
+
+            if (deleted.length === 0) {
+                throw new Error("Oppgave forslag ikke funnet");
+            }
+        }),
+
   createTask: publicProcedure
     .input(
       z.object({
         carId: z.number().int().positive(),
         title: z.string().min(1),
         description: z.string().optional().nullable(),
-          time: z.number().int().positive(),
+          time: z.number().int(),
         suggestionId: z.number().int().positive().optional().nullable(),
       })
     )
@@ -188,7 +202,7 @@ export const appRouter = router({
             if (deleted.length === 0) {
                 throw new Error("Oppgave ikke funnet");
             }
-        })
+        }),
 });
 
 // export type definition of API

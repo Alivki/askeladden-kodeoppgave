@@ -7,6 +7,8 @@ import { useParams } from "next/navigation";
 import { TaskStatus } from "@/db/schema";
 import {taskFormSchema} from "@/validators/validators";
 import {z} from "zod";
+import Task from "@/components/TaskCard"
+import {Trash2, Sparkles} from "lucide-react";
 
 export default function CarPage() {
   const { id } = useParams() as { id: string };
@@ -36,6 +38,12 @@ export default function CarPage() {
       refetchSuggestions();
     },
   });
+
+    const deleteSuggestionTask = trpc.deleteSuggestionTask.useMutation({
+        onSuccess: () => {
+            refetchSuggestions();
+        }
+    })
 
   const createTask = trpc.createTask.useMutation({
     onSuccess: () => {
@@ -71,6 +79,12 @@ export default function CarPage() {
       });
     }
   };
+
+    const  handleTaskSuggestionDelete = (taskId: number) => {
+        deleteSuggestionTask.mutate({
+            taskId
+        })
+    }
 
   const handleCreateTask = (e: React.FormEvent) => {
     e.preventDefault();
@@ -203,15 +217,22 @@ export default function CarPage() {
       <section className="mt-8">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl">Oppgaveforslag</h2>
-          <button
-            onClick={() => fetchAISuggestions.mutate({ carId })}
-            disabled={fetchAISuggestions.isPending}
-            className="px-4 py-2 text-sm bg-purple-600 text-white border-none rounded whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer hover:bg-purple-700 transition-colors"
-          >
-            {fetchAISuggestions.isPending
-              ? "Henter forslag..."
-              : "Hent AI-forslag"}
-          </button>
+            {suggestions && suggestions.length === 0  ? (
+                <button
+                    onClick={() => fetchAISuggestions.mutate({ carId })}
+                    disabled={fetchAISuggestions.isPending}
+                    className="px-4 py-2 text-sm bg-purple-600 text-white border-none rounded whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer hover:bg-purple-700 transition-colors"
+                >
+                    {fetchAISuggestions.isPending
+                        ? "Henter forslag..."
+                        : "Hent AI-forslag"}
+                </button>
+            ) : (
+                <div className="px-4 py-2 bg-purple-600 rounded  text-sm text-white flex items-center gap-2 justify-between">
+                    <Sparkles size={16}/>
+                    <p>AI forslag gitt</p>
+                </div>
+            )}
         </div>
 
         {fetchAISuggestions.error && (
@@ -230,7 +251,7 @@ export default function CarPage() {
             {suggestions.map((suggestion) => (
               <div
                 key={suggestion.id}
-                className="p-4 bg-purple-50 border border-purple-200 rounded-lg flex items-start justify-between gap-4"
+                className="p-4 bg-purple-50 border border-purple-200 rounded-lg flex items-start flex-col sm:flex-row justify-between gap-4"
               >
                 <div className="flex-1">
                   <h3 className="font-semibold text-lg mb-1">
@@ -242,13 +263,22 @@ export default function CarPage() {
                     </p>
                   )}
                 </div>
-                <button
-                  onClick={() => handleCreateTaskFromSuggestion(suggestion.id)}
-                  disabled={createTask.isPending}
-                  className="px-4 py-2 text-sm bg-purple-600 text-white border-none rounded whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer hover:bg-purple-700 transition-colors"
-                >
-                  Opprett oppgave
-                </button>
+                  <div className="flex w-full sm:w-auto flex-row gap-2 h-10">
+                      <button
+                          onClick={() => handleCreateTaskFromSuggestion(suggestion.id)}
+                          disabled={createTask.isPending}
+                          className="px-4 py-2 w-full sm:w-auto text-sm bg-purple-600 text-white border-none rounded whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer hover:bg-purple-700 transition-colors"
+                      >
+                          Opprett oppgave
+                      </button>
+                      <button
+                          onClick={() => handleTaskSuggestionDelete(suggestion.id)}
+                          disabled={createTask.isPending}
+                          className="h-10 w-10 flex-shrink-0 flex items-center justify-center duration-200 bg-gray-400 text-white border-none rounded disabled:cursor-not-allowed cursor-pointer hover:bg-red-500 transition-colors"
+                      >
+                          <Trash2 size={15}/>
+                      </button>
+                  </div>
               </div>
             ))}
           </div>
@@ -258,7 +288,12 @@ export default function CarPage() {
       {/* Tasks Section */}
       <section className="mt-8">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl">Oppgaver</h2>
+            <div className="flex flex-row gap-2 items-center justify-center">
+                <h2 className="text-xl">Oppgaver</h2>
+                {!tasks || tasks.length > 0 && (
+                    <h2>({tasks.length})</h2>
+                )}
+            </div>
           <button
             onClick={() => setShowCreateTaskForm(!showCreateTaskForm)}
             className="px-4 py-2 text-sm bg-blue-600 text-white border-none rounded whitespace-nowrap cursor-pointer hover:bg-blue-700 transition-colors"
@@ -373,114 +408,93 @@ export default function CarPage() {
           </div>
         ) : (
           <div className="grid gap-3">
-            {tasks.map((task) => (
-              <div
-                key={task.id}
-                className={`p-4 border rounded-lg ${
-                  task.status === TaskStatus.COMPLETED
-                    ? "bg-green-50 border-green-200"
-                    : task.status === TaskStatus.IN_PROGRESS
-                    ? "bg-yellow-50 border-yellow-200"
-                    : "bg-white border-gray-200"
-                }`}
-              >
-                <div className="flex items-start justify-between gap-4 mb-3">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg mb-1">{task.title}</h3>
-                    {task.description && (
-                        <p className="text-gray-600 m-0 mb-2">
-                            {task.description}
-                        </p>
-                    )}
-                      {task.estimatedTimeMinutes && (
-                          <p className="text-gray-600 m-0 mb-2">
-                             Estimert tid i min: {task.estimatedTimeMinutes}
-                          </p>
-                      )}
-                    <div className="flex gap-4 text-sm text-gray-500">
-                      <span>
-                        Status:{" "}
-                        <span className="font-medium">
-                          {task.status === TaskStatus.PENDING
-                            ? "Venter"
-                            : task.status === TaskStatus.IN_PROGRESS
-                            ? "Pågår"
-                            : "Fullført"}
-                        </span>
-                      </span>
-                      {task.createdAt && (
-                        <span>
-                          Opprettet:{" "}
-                          {new Date(task.createdAt).toLocaleDateString("no-NO")}
-                        </span>
-                      )}
-                    </div>
+              <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+                  <div>
+                      <h3 className="font-semibold text-lg mb-3 text-gray-700 flex items-center gap-2">
+                          Venter
+                          <span className="text-sm text-gray-500 font-normal">
+                              ({tasks.filter(task => task.status ===  TaskStatus.PENDING).length})
+                          </span>
+                      </h3>
+
+                      <div className="space-y-3">
+                          {tasks.filter(task => task.status === TaskStatus.PENDING).length === 0 && (
+                              <div className="p-6 bg-gray-50 border border-gray-200 rounded-lg text-center text-gray-600">
+                                  Ingen ventene oppgaver på dette tidspunktet. Bra jobbet 👍
+                              </div>
+                          )}
+                          {tasks.filter(task => task.status === TaskStatus.PENDING)
+                              .map(task => (
+                              <Task
+                                  key={task.id}
+                                  task={task}
+                                  onStatusChange={handleStatusChange}
+                                  onDelete={handleTaskDelete}
+                                  isUpdating={updateTaskStatus.isPending || deleteTask.isPending}
+                              />
+                            ))
+                          }
+                      </div>
                   </div>
-                </div>
-                <div className="flex gap-2 justify-between">
-                    <div className="flex gap-2">
-                        <button
-                            onClick={() =>
-                                handleStatusChange(task.id, TaskStatus.PENDING)
-                            }
-                            disabled={
-                                updateTaskStatus.isPending ||
-                                task.status === TaskStatus.PENDING
-                            }
-                            className={`px-3 py-1 text-xs border rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors ${
-                                task.status === TaskStatus.PENDING
-                                    ? "bg-gray-200 text-gray-700 border-gray-300"
-                                    : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-                            }`}
-                        >
-                            Venter
-                        </button>
-                        <button
-                            onClick={() =>
-                                handleStatusChange(task.id, TaskStatus.IN_PROGRESS)
-                            }
-                            disabled={
-                                updateTaskStatus.isPending ||
-                                task.status === TaskStatus.IN_PROGRESS
-                            }
-                            className={`px-3 py-1 text-xs border rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors ${
-                                task.status === TaskStatus.IN_PROGRESS
-                                    ? "bg-yellow-200 text-yellow-800 border-yellow-300"
-                                    : "bg-white text-gray-700 border-gray-300 hover:bg-yellow-50"
-                            }`}
-                        >
-                            Pågår
-                        </button>
-                        <button
-                            onClick={() =>
-                                handleStatusChange(task.id, TaskStatus.COMPLETED)
-                            }
-                            disabled={
-                                updateTaskStatus.isPending ||
-                                task.status === TaskStatus.COMPLETED
-                            }
-                            className={`px-3 py-1 text-xs border rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors ${
-                                task.status === TaskStatus.COMPLETED
-                                    ? "bg-green-200 text-green-800 border-green-300"
-                                    : "bg-white text-gray-700 border-gray-300 hover:bg-green-50"
-                            }`}
-                        >
-                            Fullført
-                        </button>
-                    </div>
-                    <div>
-                        <button
-                            onClick={() =>
-                                handleTaskDelete(task.id)
-                            }
-                            className={`bg-red-200 text-red-800 border-red-300 hover:bg-red-100 px-3 py-1 text-xs border rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors`}
-                        >
-                            Slett oppgave
-                        </button>
-                    </div>
-                </div>
+
+                  <div>
+                      <h3 className="font-semibold text-lg mb-3 text-yellow-700 flex items-center gap-2">
+                          <div>Pågår</div>
+                          <div className="w-3 h-3 rounded-full bg-yellow-400 animate-pulse"></div>
+                          <span className="text-sm text-gray-500 font-normal">
+                              ({tasks.filter(task => task.status ===  TaskStatus.PENDING).length})
+                          </span>
+                      </h3>
+
+                      <div className="space-y-3">
+                          {tasks.filter(task => task.status === TaskStatus.IN_PROGRESS).length === 0 && (
+                              <div className="p-6 bg-gray-50 border border-gray-200 rounded-lg text-center text-gray-600">
+                                  Ingen pågående oppgaver på dette tidspunktet.
+                              </div>
+                          )}
+                          {tasks.filter(task => task.status === TaskStatus.IN_PROGRESS)
+                              .map(task => (
+                              <Task
+                                  key={task.id}
+                                  task={task}
+                                  onStatusChange={handleStatusChange}
+                                  onDelete={handleTaskDelete}
+                                  isUpdating={updateTaskStatus.isPending || deleteTask.isPending}
+                              />
+                            ))
+                          }
+                      </div>
+                  </div>
+
+                  <div>
+                      <h3 className="font-semibold text-lg mb-3 text-green-700 flex items-center gap-2">
+                          <div>Fullført</div>
+                          <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                          <span className="text-sm text-gray-500 font-normal">
+                              ({tasks.filter(task => task.status ===  TaskStatus.PENDING).length})
+                          </span>
+                      </h3>
+
+                      <div className="space-y-3">
+                          {tasks.filter(task => task.status === TaskStatus.COMPLETED).length === 0 && (
+                              <div className="p-6 bg-gray-50 border border-gray-200 rounded-lg text-center text-gray-600">
+                                  Ingen fullførte oppgaver enda.
+                              </div>
+                          )}
+                          {tasks.filter(task => task.status === TaskStatus.COMPLETED)
+                              .map(task => (
+                              <Task
+                                  key={task.id}
+                                  task={task}
+                                  onStatusChange={handleStatusChange}
+                                  onDelete={handleTaskDelete}
+                                  isUpdating={updateTaskStatus.isPending || deleteTask.isPending}
+                              />
+                            ))
+                          }
+                      </div>
+                  </div>
               </div>
-            ))}
           </div>
         )}
       </section>
