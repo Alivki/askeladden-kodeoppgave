@@ -1,6 +1,6 @@
-import { TaskStatus } from "@/db/schema";
-import { type inferRouterOutputs } from "@trpc/server";
-import { type AppRouter } from "@/server/routers/_app";
+import {TaskStatus} from "@/db/schema";
+import {type inferRouterOutputs} from "@trpc/server";
+import {type AppRouter} from "@/server/routers/_app";
 
 type RouterOutput = inferRouterOutputs<AppRouter>;
 type Task = RouterOutput["getTasks"][number];
@@ -26,9 +26,12 @@ export default function Task({task, onStatusChange, onDelete, isUpdating}: TaskI
 
     const formatStatus = () => {
         switch (task.status) {
-            case TaskStatus.PENDING: return "Venter";
-            case TaskStatus.IN_PROGRESS: return "Pågår";
-            case TaskStatus.COMPLETED: return "Fullført";
+            case TaskStatus.PENDING:
+                return "Venter";
+            case TaskStatus.IN_PROGRESS:
+                return "Pågår";
+            case TaskStatus.COMPLETED:
+                return "Fullført";
         }
     }
 
@@ -96,7 +99,7 @@ export default function Task({task, onStatusChange, onDelete, isUpdating}: TaskI
                             onStatusChange(task.id, TaskStatus.COMPLETED)
                         }
                         disabled={
-                            isUpdating|| task.status === TaskStatus.COMPLETED
+                            isUpdating || task.status === TaskStatus.COMPLETED
                         }
                         className={`px-3 py-1 text-xs border rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors ${
                             task.status === TaskStatus.COMPLETED

@@ -1,11 +1,11 @@
 import {generateObject} from "ai"
 import {z} from "zod";
-import { gateway } from 'ai';
+import {gateway} from 'ai';
 
 export interface TaskSuggestion {
-  title: string;
-  description: string | null;
-  timeUse: number;
+    title: string;
+    description: string | null;
+    timeUse: number;
 }
 
 const taskSuggestionSchema = z.object({
@@ -19,12 +19,12 @@ const taskSuggestionsSchema = z.object({
 });
 
 export interface CarInfo {
-  id: number;
-  regNr: string;
-  make: string;
-  model: string;
-  year: number;
-  color: string | null;
+    id: number;
+    regNr: string;
+    make: string;
+    model: string;
+    year: number;
+    color: string | null;
 }
 
 /**
@@ -35,7 +35,7 @@ export interface CarInfo {
  */
 export async function generateTaskSuggestions(carInfo: CarInfo): Promise<TaskSuggestion[]> {
     try {
-        const { object } = await generateObject<typeof taskSuggestionsSchema>({
+        const {object} = await generateObject<typeof taskSuggestionsSchema>({
             model: gateway('openai/gpt-5.1'),
             output: "object",
             schema: taskSuggestionsSchema,
@@ -62,9 +62,13 @@ export async function generateTaskSuggestions(carInfo: CarInfo): Promise<TaskSug
     } catch (error) {
         console.error("AI feilet ved generering av oppgaver:", error);
         return [
-            { title: "Oljeskift og filterbytte", description: "Anbefales hvert 15 000 km eller årlig", timeUse: 10 },
-            { title: "Bremsesjekk", description: "Kontroller klosser, skiver og bremsevæske", timeUse: 20 },
-            { title: "Dekk og hjulstilling", description: "Sjekk mønsterdybde og juster sporvidde ved behov", timeUse: 200 },
+            {title: "Oljeskift og filterbytte", description: "Anbefales hvert 15 000 km eller årlig", timeUse: 10},
+            {title: "Bremsesjekk", description: "Kontroller klosser, skiver og bremsevæske", timeUse: 20},
+            {
+                title: "Dekk og hjulstilling",
+                description: "Sjekk mønsterdybde og juster sporvidde ved behov",
+                timeUse: 200
+            },
         ];
     }
 }

@@ -30,7 +30,7 @@ export async function fetchVehicle(regNr: string): Promise<VegvesenVehicle> {
         return {
             make: vehicle.tekniskKjoretoy.merke || "UKJENT",
             model: vehicle.tekniskKjoretoy.handelsbetegnelse || "UKJENT",
-            year: vehicle.registrering.forstegangsregistrering ? parseInt(vehicle.registrering.forstegangsregistrering): 0,
+            year: vehicle.registrering.forstegangsregistrering ? parseInt(vehicle.registrering.forstegangsregistrering) : 0,
             color: vehicle.tekniskKjoretoy.karosseri.farge || "UKJENT",
         };
     } catch (err) {

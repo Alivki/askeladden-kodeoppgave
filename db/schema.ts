@@ -1,51 +1,51 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import {sqliteTable, text, integer} from "drizzle-orm/sqlite-core";
 
 export enum TaskStatus {
-  PENDING = "pending",
-  IN_PROGRESS = "in_progress",
-  COMPLETED = "completed",
+    PENDING = "pending",
+    IN_PROGRESS = "in_progress",
+    COMPLETED = "completed",
 }
 
 export const cars = sqliteTable("cars", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  regNr: text("reg_nr").notNull().unique(),
-  make: text("make").notNull(),
-  model: text("model").notNull(),
-  year: integer("year").notNull(),
-  color: text("color"),
-  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(
-    () => new Date()
-  ),
+    id: integer("id").primaryKey({autoIncrement: true}),
+    regNr: text("reg_nr").notNull().unique(),
+    make: text("make").notNull(),
+    model: text("model").notNull(),
+    year: integer("year").notNull(),
+    color: text("color"),
+    createdAt: integer("created_at", {mode: "timestamp"}).$defaultFn(
+        () => new Date()
+    ),
 });
 
 export const taskSuggestions = sqliteTable("task_suggestions", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  carId: integer("car_id")
-    .notNull()
-    .references(() => cars.id, { onDelete: "cascade" }),
-  title: text("title").notNull(),
-  description: text("description"),
+    id: integer("id").primaryKey({autoIncrement: true}),
+    carId: integer("car_id")
+        .notNull()
+        .references(() => cars.id, {onDelete: "cascade"}),
+    title: text("title").notNull(),
+    description: text("description"),
     timeUse: integer("time_use"),
-  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(
-    () => new Date()
-  ),
+    createdAt: integer("created_at", {mode: "timestamp"}).$defaultFn(
+        () => new Date()
+    ),
 });
 
 export const tasks = sqliteTable("tasks", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  carId: integer("car_id")
-    .notNull()
-    .references(() => cars.id, { onDelete: "cascade" }),
-  title: text("title").notNull(),
-  description: text("description"),
+    id: integer("id").primaryKey({autoIncrement: true}),
+    carId: integer("car_id")
+        .notNull()
+        .references(() => cars.id, {onDelete: "cascade"}),
+    title: text("title").notNull(),
+    description: text("description"),
     estimatedTimeMinutes: integer("estimated_time_minutes"),
-  suggestionId: integer("suggestion_id").references(() => taskSuggestions.id, { onDelete: "set null"}),
-  status: text("status", { enum: ["pending", "in_progress", "completed"] })
-    .notNull()
-    .default(TaskStatus.PENDING)
-    .$type<TaskStatus>(),
-  completed: integer("completed", { mode: "boolean" }).notNull().default(false),
-  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(
-    () => new Date()
-  ),
+    suggestionId: integer("suggestion_id").references(() => taskSuggestions.id, {onDelete: "set null"}),
+    status: text("status", {enum: ["pending", "in_progress", "completed"]})
+        .notNull()
+        .default(TaskStatus.PENDING)
+        .$type<TaskStatus>(),
+    completed: integer("completed", {mode: "boolean"}).notNull().default(false),
+    createdAt: integer("created_at", {mode: "timestamp"}).$defaultFn(
+        () => new Date()
+    ),
 });
