@@ -14,6 +14,7 @@ CREATE TABLE `task_suggestions` (
 	`car_id` integer NOT NULL,
 	`title` text NOT NULL,
 	`description` text,
+	`time_use` integer,
 	`created_at` integer,
 	FOREIGN KEY (`car_id`) REFERENCES `cars`(`id`) ON UPDATE no action ON DELETE cascade
 );

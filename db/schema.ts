@@ -25,6 +25,7 @@ export const taskSuggestions = sqliteTable("task_suggestions", {
     .references(() => cars.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
   description: text("description"),
+    timeUse: integer("time_use"),
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(
     () => new Date()
   ),

@@ -108,6 +108,7 @@ export const appRouter = router({
             carId: input.carId,
             title: suggestion.title,
             description: suggestion.description,
+              timeUse: suggestion.timeUse,
           }))
         )
         .returning();

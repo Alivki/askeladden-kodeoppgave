@@ -8,7 +8,7 @@ import { TaskStatus } from "@/db/schema";
 import {taskFormSchema} from "@/validators/validators";
 import {z} from "zod";
 import Task from "@/components/TaskCard"
-import {Trash2, Sparkles} from "lucide-react";
+import {Trash2, Sparkles, Loader} from "lucide-react";
 
 export default function CarPage() {
   const { id } = useParams() as { id: string };
@@ -74,7 +74,7 @@ export default function CarPage() {
         carId,
         title: suggestion.title,
         description: suggestion.description ?? undefined,
-          time: 0,
+          time: suggestion.timeUse,
         suggestionId,
       });
     }
@@ -223,12 +223,16 @@ export default function CarPage() {
                     disabled={fetchAISuggestions.isPending}
                     className="px-4 py-2 text-sm bg-purple-600 text-white border-none rounded whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer hover:bg-purple-700 transition-colors"
                 >
-                    {fetchAISuggestions.isPending
-                        ? "Henter forslag..."
-                        : "Hent AI-forslag"}
+                    {fetchAISuggestions.isPending ? (
+                        <span className="flex items-center gap-2">
+                            Henter forslag <Loader className="animate-spin w-4 h-4" />
+                        </span>
+                    ) : (
+                        "Hent AI-forslag"
+                    )}
                 </button>
             ) : (
-                <div className="px-4 py-2 bg-purple-600 rounded  text-sm text-white flex items-center gap-2 justify-between">
+                <div className="px-4 py-2 bg-purple-600 rounded cursor-not-allowed text-sm text-white flex items-center gap-2 justify-between">
                     <Sparkles size={16}/>
                     <p>AI forslag gitt</p>
                 </div>
@@ -418,7 +422,7 @@ export default function CarPage() {
                       </h3>
 
                       <div className="space-y-3">
-                          {tasks.filter(task => task.status === TaskStatus.PENDING).length === 0 && (
+                          {tasks?.filter(task => task.status === TaskStatus.PENDING).length === 0 && (
                               <div className="p-6 bg-gray-50 border border-gray-200 rounded-lg text-center text-gray-600">
                                   Ingen ventene oppgaver på dette tidspunktet. Bra jobbet 👍
                               </div>
@@ -442,12 +446,12 @@ export default function CarPage() {
                           <div>Pågår</div>
                           <div className="w-3 h-3 rounded-full bg-yellow-400 animate-pulse"></div>
                           <span className="text-sm text-gray-500 font-normal">
-                              ({tasks.filter(task => task.status ===  TaskStatus.PENDING).length})
+                              ({tasks.filter(task => task.status ===  TaskStatus.IN_PROGRESS).length})
                           </span>
                       </h3>
 
                       <div className="space-y-3">
-                          {tasks.filter(task => task.status === TaskStatus.IN_PROGRESS).length === 0 && (
+                          {tasks?.filter(task => task.status === TaskStatus.IN_PROGRESS).length === 0 && (
                               <div className="p-6 bg-gray-50 border border-gray-200 rounded-lg text-center text-gray-600">
                                   Ingen pågående oppgaver på dette tidspunktet.
                               </div>
@@ -471,12 +475,12 @@ export default function CarPage() {
                           <div>Fullført</div>
                           <div className="w-3 h-3 rounded-full bg-green-500"></div>
                           <span className="text-sm text-gray-500 font-normal">
-                              ({tasks.filter(task => task.status ===  TaskStatus.PENDING).length})
+                              ({tasks.filter(task => task.status ===  TaskStatus.COMPLETED).length})
                           </span>
                       </h3>
 
                       <div className="space-y-3">
-                          {tasks.filter(task => task.status === TaskStatus.COMPLETED).length === 0 && (
+                          {tasks?.filter(task => task.status === TaskStatus.COMPLETED).length === 0 && (
                               <div className="p-6 bg-gray-50 border border-gray-200 rounded-lg text-center text-gray-600">
                                   Ingen fullførte oppgaver enda.
                               </div>

@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "a4f19a4d-bd65-4210-80db-5f0f67a36b70",
+  "id": "67eaa99f-8be0-4da4-acca-566ed70bcacd",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "cars": {
@@ -98,6 +98,13 @@
         "description": {
           "name": "description",
           "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "time_use": {
+          "name": "time_use",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false

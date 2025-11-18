@@ -150,17 +150,6 @@ export default function Home() {
                             )}
                         </div>
                     </Link>
-
-                    <div>
-                        <button
-                            onClick={() =>
-                                handleCarDelete(car.id)
-                            }
-                            className={`h-7 bg-red-50 text-red-400 border-red-200 hover:bg-red-100 px-3 py-1 text-xs border rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors`}
-                        >
-                            Slett bil
-                        </button>
-                    </div>
                 </div>
             ))}
           </div>
