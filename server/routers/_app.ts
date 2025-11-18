@@ -4,6 +4,7 @@ import { db } from "../../db/drizzle";
 import { cars, tasks, taskSuggestions, TaskStatus } from "../../db/schema";
 import { eq } from "drizzle-orm";
 import { generateTaskSuggestions } from "../services/ai";
+import {fetchVehicle} from "@/server/services/vegvesen";
 
 export const appRouter = router({
   getCars: publicProcedure.query(async () => {
@@ -31,14 +32,29 @@ export const appRouter = router({
       })
     )
     .mutation(async ({ input }) => {
+        const regNr = input.regNr.toUpperCase();
+
+        let vehicleData = {
+            make: "UKJENT",
+            model: "UKJENT",
+            year: 0,
+            color: "UKJENT",
+        };
+
+        try {
+            vehicleData = await fetchVehicle(regNr);
+        } catch (err) {
+            console.warn(`Failed to fetch vehicle info for ${regNr}:`, err);
+        }
+
       const [newCar] = await db
         .insert(cars)
         .values({
-          regNr: input.regNr.toUpperCase(),
-          make: "TODO",
-          model: "TODO",
-          year: 0,
-          color: "TODO",
+          regNr: regNr,
+          make: vehicleData.make,
+          model: vehicleData.model,
+          year: vehicleData.year,
+          color: vehicleData.color,
         })
         .returning();
       return newCar;
