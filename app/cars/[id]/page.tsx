@@ -74,7 +74,7 @@ export default function CarPage() {
         carId,
         title: suggestion.title,
         description: suggestion.description ?? undefined,
-          time: suggestion.timeUse,
+          time: suggestion.timeUse ?? 0,
         suggestionId,
       });
     }
