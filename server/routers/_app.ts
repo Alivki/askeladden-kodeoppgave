@@ -2,7 +2,7 @@ import { z } from "zod";
 import { router, publicProcedure } from "../trpc";
 import { db } from "../../db/drizzle";
 import { cars, tasks, taskSuggestions, TaskStatus } from "../../db/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { generateTaskSuggestions } from "../services/ai";
 import {fetchVehicle} from "@/server/services/vegvesen";
 
@@ -151,6 +151,21 @@ export const appRouter = router({
       })
     )
     .mutation(async ({ input }) => {
+        const existing = await db
+            .select()
+            .from(tasks)
+            .where(
+                and(
+                    eq(tasks.carId, input.carId),
+                    eq(tasks.title, input.title)
+                )
+            )
+            .limit(1);
+
+        if (existing.length > 0) {
+            throw new Error("Oppgave med samme tittel finnes allerede for denne bilen.");
+        }
+
       const [newTask] = await db
         .insert(tasks)
         .values({
