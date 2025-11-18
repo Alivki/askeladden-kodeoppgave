@@ -1,52 +1,106 @@
 # Kodeoppgave | Askeladden Interns 2026
 
-Vi skal bygge neste generasjons plattform for bilverksteder, og vi trenger hjelp til å løfte den til et nytt nivå. Vi har laget en enkel verksted-applikasjon som demonstrerer grunnfunksjonaliteten, men den har flere kjente feil og mangler som trenger oppmerksomhet.
+## Implementerte forbedringer
 
-## Kjente feil og mangler
+Jeg har implementert alle tre hovedoppgavene, samt flere ekstra forbedringere. Her er en oversikt over hva som er gjort:
 
-### 1. Manglende integrasjon med Statens vegvesens kjøretøy-API
+### ✅ 1. Integrasjon med Statens vegvesens kjøretøy-API
 
-Når man legger til en ny bil, lagres ikke informasjon om merke, modell, år eller farge
+**Implementert:**
+- Opprettet `server/services/vegvesen.ts` som håndterer API-kall til Vegvesen
+- Automatisk henting av bilinformasjon (merke, modell, årgang, farge) basert på registreringsnummer
+- Robust feilhåndtering med egen `VegvesenAPIError` klasse
+- Fallback-verdier ("UKJENT") hvis API-kall feiler, slik at brukeren fortsatt kan legge til bilen
+- TypeScript-typer for API-respons (`types/types.ts`)
 
-- Forbedre brukergrensesnittet slik at denne informasjonen registreres og lagres i databasen
-- Integrer med Statens vegvesens kjøretøy-API for automatisk utfylling av bilinformasjon basert på registreringsnummer
+### ✅ 2. AI-genererte vedlikeholdsoppgaver med Vercel AI SDK
 
-Eksempel på oppslag mot vegvesenet for bil med registreringsnummer EK12345:
+**Implementert:**
+- Fullstendig redesign av `task_suggestions` funksjonaliteten
+- Integrasjon med Vercel AI Gateway via `@ai-sdk/vercel`
+- Bruker `generateObject` med Zod-schema for strukturert output
+- AI-genererer relevante oppgaver basert på bilens merke, modell, årgang og registreringsnummer
+- Hver oppgave inkluderer tittel, beskrivelse og tidsestimat (i minutter)
+- Fallback-oppgaver hvis AI-kall feiler
 
-```
-https://kjoretoyoppslag.atlas.vegvesen.no/ws/no/vegvesen/kjoretoy/kjoretoyoppslag/v1/kjennemerkeoppslag/kjoretoy/EK12345
-```
+### ✅ 3. Forbedret detaljeside for bil
 
-### 2. Forslag til vedlikeholdsoppgaver er det samme for hver bil
+**Alle oppgitte problemer løst:**
 
-Redesign funksjonaliteten for `task_suggestions` slik at applikasjonen bruker en LLM for å generere forslag til vedlikeholdsoppgaver basert på informasjon om bilen. Bruk [Vercel AI SDK](https://ai-sdk.dev/)
+#### a) Validering og kontroll av oppgaver
+- Implementert Zod-validering (`validators/validators.ts`) for oppgaveopprettelse
+- Validering av:
+  - Tittel: minimum 1 tegn, maksimum 100 tegn
+  - Beskrivelse: minimum 1 tegn, maksimum 400 tegn
+  - Tidsestimat: må være positivt heltall
+- Forhindrer duplikate oppgaver (sjekker om oppgave med samme tittel allerede eksisterer)
+- Visuell feilmelding per felt ved valideringsfeil
 
-Vi har laget en API-nøkkel for [Vercel AI Gateway](https://vercel.com/ai-gateway) til deg [her](https://share.1password.com/s#W5u1lUpHAgCREw6uLyTK8MoUXJaWRq4ntY_zJuTFbkQ). Denne legger du så til i `.env.local` i rot av repoet:
+#### b) Funksjonelle statusknapper
+- Umiddelbar visuell feedback med toast-notifikasjoner (Sonner)
+- Disabled state når oppdatering pågår
+- Status endres korrekt mellom "Venter", "Pågår" og "Fullført"
+
+#### c) Bedre oversikt over oppgaver
+- Oppgaver gruppert i tre seksjoner basert på status:
+  - **Venter** (pending) - med antall oppgaver
+  - **Pågår** (in_progress) - med animert indikator
+  - **Fullført** (completed) - med visuell markering
+- Hver seksjon viser antall oppgaver i parentes
+- Tomme tilstander med informative meldinger
+- `TaskCard` komponent for konsistent visning
+
+#### d) Tidsestimater på oppgaver
+- `estimatedTimeMinutes` felt lagt til i `tasks` tabell
+- Tidsestimat kan legges til ved opprettelse av oppgaver
+- Tidsestimat vises på hver oppgavekort
+- AI-forslag inkluderer automatisk tidsestimat
+
+### Ekstra forbedringer
+
+#### Task Dashboard
+- Opprettet `TaskDashboard` komponent som viser:
+  - Totalt antall oppgaver
+  - Total estimert tid (i minutter)
+  - Gjennomsnittlig tid per oppgave
+  - Visuell fremdriftsindikator (progress bar) som viser:
+    - Grønn: fullførte oppgaver
+    - Gul: fullførte + pågående oppgaver
+    - Grå: resterende oppgaver
+
+#### Forbedret brukeropplevelse
+- Toast-notifikasjoner (Sonner) for alle brukerhandlinger:
+  - Bil lagt til
+  - Oppgave opprettet
+  - Status oppdatert
+  - Oppgave slettet
+  - AI-forslag generert
+- Ikoner fra Lucide React for bedre visuell kommunikasjon
+- Responsive design med Tailwind CSS
+
+#### Sortering på hovedside
+- Implementert sortering av biler etter:
+  - Dato lagt til (nyeste/eldste først)
+  - Årstall (nyeste/eldste først)
+  - Farge (alfabetisk)
+  - Modell (alfabetisk)
+- Visuell indikator for aktivt sorteringsfelt
+- Toggle mellom stigende/synkende rekkefølge
+
+#### Databaseforbedringer
+- `estimatedTimeMinutes` lagt til i `tasks` tabell
+- `timeUse` lagt til i `task_suggestions` tabell
+- Foreign key constraints med `onDelete: "set null"` for suggestionId
+
+### Miljøvariabler
+
+For å kjøre applikasjonen trenger du følgende miljøvariabler i `.env.local`:
 
 ```sh
-AI_GATEWAY_API_KEY=putt_api_nøkkel_her
+AI_GATEWAY_API_KEY=din_api_nøkkel_her
+VEGVESEN_API_ROUTE=https://kjoretoyoppslag.atlas.vegvesen.no/ws/no/vegvesen/kjoretoy/kjoretoyoppslag/v1/kjennemerkeoppslag/kjoretoy
 ```
-
-### 3. Detaljesiden for bil fungerer dårlig
-
-Forbedre siden slik at verkstedansatte enkelt kan planlegge og følge opp arbeidsdagen sin.
-
-Noen kjente problemer med siden:
-
-- Man kan opprette ubegrenset mange oppgaver uten kontroll eller validering
-- Statusknappene endrer kun farge og har ingen faktisk funksjon
-- Vanskelig å få oversikt over oppgaver (gjort, pågår, venter)
-- Ingen tidsestimat på oppgaver
-
-## Din oppgave
-
-Din oppgave er å velge ut ett eller flere forbedringsområder, enten ved å fikse feil, forbedre brukeropplevelsen eller utvikle ny funksjonalitet
-
-**Hva vi forventer:**
-
-- Velg ett eller flere forbedringsområder du ønsker å jobbe med (trenger ikke være med i listen)
-- Hvis noe ikke gikk som planlagt, eller du har flere ideer enn du rakk å implementere, dokumenter det i README.md så vet vi hva du har tenkt
-- Instrukser for hvordan levere oppgaven finner dere [her](https://docs.google.com/forms/d/e/1FAIpQLScduGFnX-5ML1Xgvl0aqOkLCUT6M5oJ2DE0yh0GbDyll2jAvw/viewform?usp=sharing&ouid=114956975980227072759)
+For å få AI prompts til å fungere måtte jeg pulle ned vercel env for å få VERCEL_OIDC_TOKEN. Den resetter hvert 12 time.
 
 ## Få prosjektet opp å kjøre
 
@@ -92,10 +146,24 @@ npm run db:studio
 ## Prosjektstruktur
 
 - `app/` - Next.js app router sider og API-ruter
+  - `page.tsx` - Hovedside med bilregister og sortering
+  - `cars/[id]/page.tsx` - Detaljeside for bil med oppgaver
 - `server/` - tRPC router og server-side tjenester
+  - `routers/_app.ts` - tRPC router med alle endpoints
+  - `services/vegvesen.ts` - Integrasjon med Vegvesen API
+  - `services/ai.ts` - AI-generering av oppgaver med Vercel AI SDK
 - `db/` - Databaseskjema og konfigurasjon
+  - `schema.ts` - Drizzle ORM schema definisjoner
 - `components/` - React-komponenter
+  - `ui/TaskCard.tsx` - Gjenbrukbar komponent for oppgavevisning
+  - `ui/TaskDashboard.tsx` - Dashboard med statistikk og fremdrift
+  - `trpc-provider.tsx` - tRPC provider setup
 - `utils/` - Hjelpefunksjoner og tRPC-oppsett på klientsiden
+- `validators/` - Zod-valideringsschemas
+  - `validators.ts` - Validering for registreringsnummer og oppgaver
+- `types/` - TypeScript type definisjoner
+  - `types.ts` - Interface for Vegvesen API respons
+- `utils/errors.ts` - Custom error classes
 
 ## Teknologier
 
@@ -107,7 +175,11 @@ Applikasjonen er bygget på en moderne webstack som ligner det vi bruker i produ
 - **Drizzle ORM** for typesikker databasehåndtering
 - **SQLite** med følgende tabeller:
   - `cars` - Informasjon om biler (registreringsnummer, merke, modell, årgang, farge)
-  - `tasks` - Arbeidsoppgaver knyttet til biler (tittel, beskrivelse, status)
-  - `task_suggestions` - AI-genererte forslag til vedlikeholdsoppgaver
+  - `tasks` - Arbeidsoppgaver knyttet til biler (tittel, beskrivelse, status, estimert tid)
+  - `task_suggestions` - AI-genererte forslag til vedlikeholdsoppgaver (inkluderer tidsestimat)
 - **Tailwind CSS** for styling
+- **Vercel AI SDK** (`ai`, `@ai-sdk/vercel`) for AI-genererte oppgaver
+- **Zod** for runtime-validering og type-safe schemas
+- **Sonner** for toast-notifikasjoner
+- **Lucide React** for ikoner
 
