@@ -5,6 +5,8 @@ import { trpc } from "@/utils/trpc";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { TaskStatus } from "@/db/schema";
+import {taskFormSchema} from "@/validators/validators";
+import {z} from "zod";
 
 export default function CarPage() {
   const { id } = useParams() as { id: string };
@@ -12,6 +14,8 @@ export default function CarPage() {
   const [showCreateTaskForm, setShowCreateTaskForm] = useState(false);
   const [taskTitle, setTaskTitle] = useState("");
   const [taskDescription, setTaskDescription] = useState("");
+  const [taskTime, setTaskTime] = useState(0);
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof z.infer<typeof taskFormSchema>, string>>>({});
 
   const {
     data: car,
@@ -37,6 +41,7 @@ export default function CarPage() {
     onSuccess: () => {
       setTaskTitle("");
       setTaskDescription("");
+      setTaskTime(0);
       setShowCreateTaskForm(false);
       refetchTasks();
     },
@@ -61,6 +66,7 @@ export default function CarPage() {
         carId,
         title: suggestion.title,
         description: suggestion.description ?? undefined,
+          time: 0,
         suggestionId,
       });
     }
@@ -68,13 +74,33 @@ export default function CarPage() {
 
   const handleCreateTask = (e: React.FormEvent) => {
     e.preventDefault();
-    if (taskTitle.trim()) {
+
+    const result = taskFormSchema.safeParse({
+       title: taskTitle.trim(),
+        time: taskTime,
+        description: taskDescription.trim(),
+    });
+
+      if (!result.success) {
+          const errors: typeof fieldErrors= {};
+          result.error.issues.forEach((err) => {
+             if (err.path.length > 0) {
+                 const key = err.path[0] as keyof typeof fieldErrors;
+                 errors[key] = err.message;
+             }
+          });
+          setFieldErrors(errors);
+          return;
+      }
+
+      setFieldErrors({});
+
       createTask.mutate({
         carId,
         title: taskTitle.trim(),
         description: taskDescription.trim() || undefined,
+          time: taskTime,
       });
-    }
   };
 
   const handleStatusChange = (taskId: number, newStatus: TaskStatus) => {
@@ -263,7 +289,34 @@ export default function CarPage() {
                 placeholder="F.eks. Service"
                 required
               />
+                {fieldErrors.title && (
+                    <p className="text-red-600 text-sm mt-1">{fieldErrors.title}</p>
+                )}
             </div>
+
+              <div className="mb-4">
+                  <label
+                      htmlFor="task-time"
+                      className="block text-sm font-medium mb-1"
+                      >
+                      Tid
+                  </label>
+                  <p className="text-xs font-medium text-zinc-500 mb-2">Skriv in tid i minutter</p>
+                  <input
+                  id="task-time"
+                  type="number"
+                  value={String(taskTime)}
+                  onChange={(e) => setTaskTime(parseInt(e.target.value))}
+                  disabled={createTask.isPending}
+                  className="w-full px-3 py-2 text-base border border-gray-300 rounded"
+                  placeholder="F.eks. 60"
+                  required
+              />
+                  {fieldErrors.time && (
+                      <p className="text-red-600 text-sm mt-1">{fieldErrors.time}</p>
+                  )}
+              </div>
+
             <div className="mb-4">
               <label
                 htmlFor="task-description"
@@ -280,7 +333,11 @@ export default function CarPage() {
                 placeholder="Beskrivelse av oppgaven..."
                 rows={3}
               />
+                {fieldErrors.description && (
+                    <p className="text-red-600 text-sm mt-1">{fieldErrors.description}</p>
+                )}
             </div>
+
             <div className="flex gap-2">
               <button
                 type="submit"
@@ -331,10 +388,15 @@ export default function CarPage() {
                   <div className="flex-1">
                     <h3 className="font-semibold text-lg mb-1">{task.title}</h3>
                     {task.description && (
-                      <p className="text-gray-600 m-0 mb-2">
-                        {task.description}
-                      </p>
+                        <p className="text-gray-600 m-0 mb-2">
+                            {task.description}
+                        </p>
                     )}
+                      {task.estimatedTimeMinutes && (
+                          <p className="text-gray-600 m-0 mb-2">
+                             Estimert tid i min: {task.estimatedTimeMinutes}
+                          </p>
+                      )}
                     <div className="flex gap-4 text-sm text-gray-500">
                       <span>
                         Status:{" "}

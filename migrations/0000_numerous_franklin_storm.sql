@@ -23,6 +23,7 @@ CREATE TABLE `tasks` (
 	`car_id` integer NOT NULL,
 	`title` text NOT NULL,
 	`description` text,
+	`estimated_time_minutes` integer,
 	`suggestion_id` integer,
 	`status` text DEFAULT 'pending' NOT NULL,
 	`completed` integer DEFAULT false NOT NULL,

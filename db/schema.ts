@@ -37,6 +37,7 @@ export const tasks = sqliteTable("tasks", {
     .references(() => cars.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
   description: text("description"),
+    estimatedTimeMinutes: integer("estimated_time_minutes"),
   suggestionId: integer("suggestion_id").references(() => taskSuggestions.id),
   status: text("status", { enum: ["pending", "in_progress", "completed"] })
     .notNull()

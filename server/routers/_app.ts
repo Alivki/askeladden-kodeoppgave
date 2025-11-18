@@ -131,6 +131,7 @@ export const appRouter = router({
         carId: z.number().int().positive(),
         title: z.string().min(1),
         description: z.string().optional().nullable(),
+          time: z.number().int().positive(),
         suggestionId: z.number().int().positive().optional().nullable(),
       })
     )
@@ -141,6 +142,7 @@ export const appRouter = router({
           carId: input.carId,
           title: input.title,
           description: input.description ?? null,
+            estimatedTimeMinutes: input.time,
           suggestionId: input.suggestionId ?? null,
           status: TaskStatus.PENDING,
           completed: false,

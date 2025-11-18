@@ -3,14 +3,13 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { trpc } from '@/utils/trpc';
-import { z } from 'zod';
+import {regNrSchema} from "@/validators/validators";
 
 export default function Home() {
   const [regNr, setRegNr] = useState('');
   const [error, setError] = useState('');
   const { data: cars, isLoading, refetch } = trpc.getCars.useQuery();
 
-  const regNrSchema = z.string().regex(/^[A-Za-z]{2}[0-9]{5}$/)
 
   const createCar = trpc.createCar.useMutation({
     onSuccess: () => {
