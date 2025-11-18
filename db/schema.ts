@@ -39,7 +39,7 @@ export const tasks = sqliteTable("tasks", {
   title: text("title").notNull(),
   description: text("description"),
     estimatedTimeMinutes: integer("estimated_time_minutes"),
-  suggestionId: integer("suggestion_id").references(() => taskSuggestions.id),
+  suggestionId: integer("suggestion_id").references(() => taskSuggestions.id, { onDelete: "set null"}),
   status: text("status", { enum: ["pending", "in_progress", "completed"] })
     .notNull()
     .default(TaskStatus.PENDING)

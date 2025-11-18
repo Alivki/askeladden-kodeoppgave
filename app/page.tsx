@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { trpc } from '@/utils/trpc';
 import {regNrSchema} from "@/validators/validators";
+import { toast } from "sonner"
 
 export default function Home() {
   const [regNr, setRegNr] = useState('');
@@ -13,8 +14,9 @@ export default function Home() {
 
   const createCar = trpc.createCar.useMutation({
     onSuccess: () => {
-      setRegNr('');
-      refetch();
+        toast.success(`Bil: ${regNr} ble lagt til!`)
+        refetch();
+        setRegNr('');
     },
   });
 
@@ -150,6 +152,15 @@ export default function Home() {
                             )}
                         </div>
                     </Link>
+                    <div>
+                        <button
+                            className={"bg-red-400 rounded border border-red-600 px-4 py-1 text-red-50"}
+                            onClick={() =>
+                                handleCarDelete(car.id)
+                            }>
+                            Delete
+                        </button>
+                    </div>
                 </div>
             ))}
           </div>

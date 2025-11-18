@@ -9,6 +9,7 @@ import {taskFormSchema} from "@/validators/validators";
 import {z} from "zod";
 import Task from "@/components/TaskCard"
 import {Trash2, Sparkles, Loader} from "lucide-react";
+import {toast} from "sonner";
 
 export default function CarPage() {
   const { id } = useParams() as { id: string };
@@ -35,18 +36,21 @@ export default function CarPage() {
 
   const fetchAISuggestions = trpc.fetchAISuggestions.useMutation({
     onSuccess: () => {
+        toast.success(`AI suggestions genereated!`);
       refetchSuggestions();
     },
   });
 
     const deleteSuggestionTask = trpc.deleteSuggestionTask.useMutation({
         onSuccess: () => {
+            toast.success(`Suggestion deleted successfully!`);
             refetchSuggestions();
         }
     })
 
   const createTask = trpc.createTask.useMutation({
     onSuccess: () => {
+        toast.success(`Task created successfully!`);
       setTaskTitle("");
       setTaskDescription("");
       setTaskTime(0);
@@ -57,12 +61,14 @@ export default function CarPage() {
 
   const updateTaskStatus = trpc.updateTaskStatus.useMutation({
     onSuccess: () => {
+        toast.success(`Task status updated successfully!`);
       refetchTasks();
     },
   });
 
   const deleteTask = trpc.deleteTask.useMutation({
       onSuccess: () => {
+          toast.success(`Task status deleted!`);
           refetchTasks();
       }
   })
