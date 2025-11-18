@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "21b0f4b7-204a-4600-bc06-9f2d80929fb5",
+  "id": "29af1673-65a3-488c-ad88-787dacdeac25",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "cars": {
@@ -122,7 +122,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -204,7 +204,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "tasks_suggestion_id_task_suggestions_id_fk": {

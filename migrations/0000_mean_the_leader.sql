@@ -15,7 +15,7 @@ CREATE TABLE `task_suggestions` (
 	`title` text NOT NULL,
 	`description` text,
 	`created_at` integer,
-	FOREIGN KEY (`car_id`) REFERENCES `cars`(`id`) ON UPDATE no action ON DELETE no action
+	FOREIGN KEY (`car_id`) REFERENCES `cars`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE TABLE `tasks` (
@@ -27,6 +27,6 @@ CREATE TABLE `tasks` (
 	`status` text DEFAULT 'pending' NOT NULL,
 	`completed` integer DEFAULT false NOT NULL,
 	`created_at` integer,
-	FOREIGN KEY (`car_id`) REFERENCES `cars`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`car_id`) REFERENCES `cars`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`suggestion_id`) REFERENCES `task_suggestions`(`id`) ON UPDATE no action ON DELETE no action
 );

@@ -22,7 +22,7 @@ export const taskSuggestions = sqliteTable("task_suggestions", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   carId: integer("car_id")
     .notNull()
-    .references(() => cars.id),
+    .references(() => cars.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
   description: text("description"),
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(
@@ -34,7 +34,7 @@ export const tasks = sqliteTable("tasks", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   carId: integer("car_id")
     .notNull()
-    .references(() => cars.id),
+    .references(() => cars.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
   description: text("description"),
   suggestionId: integer("suggestion_id").references(() => taskSuggestions.id),
